@@ -110,7 +110,7 @@ func GetVolume() (int, error) {
 // SetVolume sets the sound volume to the specified value (0 to 100).
 func SetVolume(volume int) error {
 	if volume < 0 || 100 < volume {
-		return errors.New("out of valid volume range")
+		return errors.New("out of valid (0-100) volume range")
 	}
 	_, err := execCmd(setVolumeCmd(volume))
 	return err
