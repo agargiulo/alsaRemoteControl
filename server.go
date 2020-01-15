@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 )
@@ -175,5 +176,17 @@ func main() {
 	http.HandleFunc("/up", volUp)
 	http.HandleFunc("/down", volDown)
 
-	log.Fatal(http.ListenAndServe(":12345", nil))
+	var port string
+	if len(os.Args) >= 1 {
+		port = os.Args[1]
+	} else {
+		port = "12345"
+	}
+	certFile := os.Getenv("ALSA_REMOTE_SSL_CERT")
+	certKey := os.Getenv("ALSA_REMOTE_SSL_KEY")
+	if len(certFile) > 1 && len(certKey) > 1 {
+		log.Fatal(http.ListenAndServeTLS(":"+port, certFile, certKey, nil))
+	} else {
+		log.Fatal(http.ListenAndServe(":"+port, nil))
+	}
 }
