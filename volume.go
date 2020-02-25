@@ -19,15 +19,10 @@ const (
 	SCONTROLLER = "Digital"
 )
 
-func cmdEnv() []string {
-	return []string{"LANG=en_US.UTF-8", "LC_ALL=en_US.UTF-8"}
-}
-
-func getVolumeCmd() []string {
-	return []string{AMIXER, "get", SCONTROLLER}
-}
-
-var volumePattern = regexp.MustCompile(`\d+%`)
+var (
+	amixerBaseCmd = []string{AMIXER, "-M"}
+	volumePattern = regexp.MustCompile(`\d+%`)
+)
 
 func parseVolume(out string) (int, error) {
 	lines := strings.Split(out, "\n")
@@ -39,26 +34,6 @@ func parseVolume(out string) (int, error) {
 		}
 	}
 	return 0, errors.New("no volume found")
-}
-
-func setVolumeCmd(volume int) []string {
-	return []string{AMIXER, "set", SCONTROLLER, strconv.Itoa(volume) + "%"}
-}
-
-func increaseVolumeCmd(diff int) []string {
-	var sign string
-	if diff >= 0 {
-		sign = "+"
-	} else {
-		// Thank you for having 5%+ and 5%- for amixer ... just thanks
-		diff = -diff
-		sign = "-"
-	}
-	return []string{AMIXER, "set", SCONTROLLER, strconv.Itoa(diff) + "%" + sign}
-}
-
-func getMutedCmd() []string {
-	return []string{AMIXER, "get", SCONTROLLER}
 }
 
 func parseMuted(out string) (bool, error) {
@@ -76,16 +51,44 @@ func parseMuted(out string) (bool, error) {
 	return false, errors.New("no mute information found")
 }
 
+func getVolumeCmd() []string {
+	return append(amixerBaseCmd, []string{"get", SCONTROLLER}...)
+}
+
+func setVolumeCmd(volume int) []string {
+	return append(amixerBaseCmd, []string{"set", SCONTROLLER, strconv.Itoa(volume) + "%"}...)
+}
+
+func increaseVolumeCmd(diff int) []string {
+	var sign string
+	if diff >= 0 {
+		sign = "+"
+	} else {
+		// Thank you for having 5%+ and 5%- for amixer ... just thanks
+		diff = -diff
+		sign = "-"
+	}
+	return append(amixerBaseCmd, []string{"set", SCONTROLLER, strconv.Itoa(diff) + "%" + sign}...)
+}
+
+func getMutedCmd() []string {
+	return append(amixerBaseCmd, []string{"get", SCONTROLLER}...)
+}
+
 func muteCmd() []string {
-	return []string{AMIXER, "set", SCONTROLLER, "mute"}
+	return append(amixerBaseCmd, []string{"set", SCONTROLLER, "mute"}...)
 }
 
 func unmuteCmd() []string {
-	return []string{AMIXER, "set", SCONTROLLER, "unmute"}
+	return append(amixerBaseCmd, []string{"set", SCONTROLLER, "unmute"}...)
 }
 
 func toggleCmd() []string {
-	return []string{AMIXER, "set", SCONTROLLER, "toggle"}
+	return append(amixerBaseCmd, []string{"set", SCONTROLLER, "toggle"}...)
+}
+
+func cmdEnv() []string {
+	return []string{"LANG=en_US.UTF-8", "LC_ALL=en_US.UTF-8"}
 }
 
 func execCmd(cmdArgs []string) ([]byte, error) {

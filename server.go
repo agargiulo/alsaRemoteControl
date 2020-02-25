@@ -18,25 +18,19 @@ func volumeStatusResponse(w http.ResponseWriter) {
 	if err != nil {
 		panic(err)
 	}
-	if _, err := fmt.Fprintf(w, "Volume is %d\nMuted: %t", alsaVolume, isMuted); err != nil {
+	if _, err := fmt.Fprintf(w, "Volume is %d\nMuted: %t\n", alsaVolume, isMuted); err != nil {
 		panic(err)
 	}
 }
 
 func errBadRequestVolume(w http.ResponseWriter, err error) {
-	w.WriteHeader(http.StatusBadRequest)
-	message := []byte("400 - [valid] POST /volume/(0-100)\n")
-	if err != nil {
-		message = append(message, err.Error()+"\n"...)
-	}
-	if _, err := w.Write(message); err != nil {
-		panic(err)
-	}
+	message := "400 - [valid] POST /volume/(0-100)\n" + err.Error() + "\n"
+	http.Error(w, string(message), http.StatusBadRequest)
 }
 
 func index(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -50,8 +44,8 @@ func index(w http.ResponseWriter, req *http.Request) {
 }
 
 func volume(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -60,7 +54,7 @@ func volume(w http.ResponseWriter, req *http.Request) {
 
 func setVolume(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
-		http.NotFound(w, req)
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
 		return
 	}
 	volumeBase := path.Base(req.URL.Path)
@@ -79,92 +73,68 @@ func setVolume(w http.ResponseWriter, req *http.Request) {
 }
 
 func toggle(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 	err := Toggle()
 	if err != nil {
 		panic(err)
 	}
-	muted, err := GetMuted()
-	if err != nil {
-		panic(err)
-	}
-	if _, err := fmt.Fprintf(w, "Volume is now muted: %t\n", muted); err != nil {
-		panic(err)
-	}
+	volumeStatusResponse(w)
 }
 
 func volUp(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 	if err := IncreaseVolume(5); err != nil {
 		panic(err)
 	}
-	alsaVolume, err := GetVolume()
-	if err != nil {
+	if _, err := fmt.Fprintln(w, "Volume went up by 5."); err != nil {
 		panic(err)
 	}
-	if _, err := fmt.Fprintf(w, "Volume went up by 5. Current volume: %d\n", alsaVolume); err != nil {
-		panic(err)
-	}
+	volumeStatusResponse(w)
 }
 
 func volDown(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 
 	if err := IncreaseVolume(-5); err != nil {
 		panic(err)
 	}
-	alsaVolume, err := GetVolume()
-	if err != nil {
+	if _, err := fmt.Fprintln(w, "Volume went down by 5."); err != nil {
 		panic(err)
 	}
-	if _, err := fmt.Fprintf(w, "Volume went down by 5. Current volume: %d\n", alsaVolume); err != nil {
-		panic(err)
-	}
+	volumeStatusResponse(w)
 }
 
 func mute(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 	err := Mute()
 	if err != nil {
 		panic(err)
 	}
-	muted, err := GetMuted()
-	if err != nil {
-		panic(err)
-	}
-	if _, err := fmt.Fprintf(w, "Audio is now muted: %t\n", muted); err != nil {
-		panic(err)
-	}
+	volumeStatusResponse(w)
 }
 
 func unmute(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.NotFound(w, req)
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
 	err := Unmute()
 	if err != nil {
 		panic(err)
 	}
-	muted, err := GetMuted()
-	if err != nil {
-		panic(err)
-	}
-	if _, err := fmt.Fprintf(w, "Audio is now unmuted: %t\n", !muted); err != nil {
-		panic(err)
-	}
+	volumeStatusResponse(w)
 }
 
 func main() {
