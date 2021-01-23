@@ -1,0 +1,58 @@
+default:
+  image: img.doom.fm/build/golang:latest-1.15.3-buster
+  tags:
+    - agarg-public-projects
+
+stages:
+  - pre-flight
+  - build
+  - release
+
+.global-vars:
+  variables:
+    GOOS: linux
+    GOARCH: arm
+    GOARM: 6
+    RELEASE_BIN: alsaRemoteControl-${GOARCH}-${GOARM}-${CI_COMMIT_REF_NAME}
+
+go-fmt-vet:
+  stage: pre-flight
+  extends:
+    - .global-vars
+  script:
+    - fmt_output=$(find -name vendor -prune -o -type f -name '*.go' -print0 | xargs -0 gofmt -l)
+    - echo "${fmt_output}"
+    - test -z "${fmt_output}"
+    - go vet ./...
+
+compile:
+  stage: build
+  extends:
+    - .global-vars
+  script:
+    - go build -ldflags "-extldflags '-static'" -o "${CI_PROJECT_DIR}/${RELEASE_BIN}" ./cmd/alsaRemoteControl
+    - xz $RELEASE_BIN
+  artifacts:
+    name: "compile_to_publish-$CI_COMMIT_REF_SLUG"
+    expose_as: compile_to_publish
+    paths:
+      - ${RELEASE_BIN}.xz
+      - .ci/publish
+    expire_in: 1 hour
+  dependencies:
+    - go-fmt-vet
+
+release:
+  stage: release
+  extends:
+    - .global-vars
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - sh .ci/publish
+  dependencies:
+    - compile
+  rules:
+    - if: $CI_COMMIT_REF_PROTECTED == "true"
+      when: always
+    - when: never
