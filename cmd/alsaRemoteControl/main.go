@@ -7,14 +7,16 @@ import (
 	"os"
 	"path"
 	"strconv"
+
+	alsa "src.doom.fm/agargiulo/alsaRemoteControl"
 )
 
 func volumeStatusResponse(w http.ResponseWriter) {
-	alsaVolume, err := GetVolume()
+	alsaVolume, err := alsa.GetVolume()
 	if err != nil {
 		panic(err)
 	}
-	isMuted, err := GetMuted()
+	isMuted, err := alsa.GetMuted()
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +66,7 @@ func setVolume(w http.ResponseWriter, req *http.Request) {
 		errBadRequestVolume(w, err)
 		return
 	}
-	err = SetVolume(reqVolume)
+	err = alsa.SetVolume(reqVolume)
 	if err != nil {
 		errBadRequestVolume(w, err)
 		return
@@ -77,7 +79,7 @@ func toggle(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
-	err := Toggle()
+	err := alsa.Toggle()
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +91,7 @@ func volUp(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
-	if err := IncreaseVolume(5); err != nil {
+	if err := alsa.IncreaseVolume(5); err != nil {
 		panic(err)
 	}
 	if _, err := fmt.Fprintln(w, "Volume went up by 5."); err != nil {
@@ -104,7 +106,7 @@ func volDown(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := IncreaseVolume(-5); err != nil {
+	if err := alsa.IncreaseVolume(-5); err != nil {
 		panic(err)
 	}
 	if _, err := fmt.Fprintln(w, "Volume went down by 5."); err != nil {
@@ -118,7 +120,7 @@ func mute(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
-	err := Mute()
+	err := alsa.Mute()
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +132,7 @@ func unmute(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "GET or HEAD only", http.StatusMethodNotAllowed)
 		return
 	}
-	err := Unmute()
+	err := alsa.Unmute()
 	if err != nil {
 		panic(err)
 	}
@@ -148,7 +150,7 @@ func main() {
 	http.HandleFunc("/down", volDown)
 
 	var port string
-	if len(os.Args) >= 1 {
+	if len(os.Args) >= 2 {
 		port = os.Args[1]
 	} else {
 		port = "12345"
