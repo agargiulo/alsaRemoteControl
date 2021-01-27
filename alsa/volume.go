@@ -16,6 +16,7 @@ import (
 
 const (
 	AMIXER      = "amixer"
+	// TODO: Make this configurable
 	SCONTROLLER = "Digital"
 )
 

@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-aws s3 cp "${RELEASE_BIN}.xz" "s3://${RELEASE_PATH}/${GOARCH}-${GOARM}/${RELEASE_BIN}.xz"
+resp="$(aws s3 cp "${RELEASE_BIN}.xz" "s3://${RELEASE_PATH}/${GOARCH}-${GOARM}/${RELEASE_BIN}.xz" 2>&1)"
+ext_status=$?
+exit $ext_status
