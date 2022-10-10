@@ -1,4 +1,4 @@
-package alsaRemoteControl
+package alsa
 
 // Most of this was copied in part from here:
 // github.com/itchyny/volume-go
