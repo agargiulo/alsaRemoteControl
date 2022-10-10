@@ -1,5 +1,5 @@
 default:
-  image: img.doom.fm/build/golang:latest-1.18.7-buster
+  image: reg.agarg.me/build/golang:latest-1.18.7-bullseye
   tags:
     - agarg-public-projects
 
