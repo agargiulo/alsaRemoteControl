@@ -1,3 +1,3 @@
-module src.doom.fm/agargiulo/alsaRemoteControl
+module code.agarg.me/agargiulo/alsaRemoteControl
 
 go 1.18
