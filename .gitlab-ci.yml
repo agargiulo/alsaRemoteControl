@@ -1,5 +1,5 @@
 default:
-  image: img.doom.fm/build/golang:latest-1.15.3-buster
+  image: img.doom.fm/build/golang:latest-1.18.7-buster
   tags:
     - agarg-public-projects
 
@@ -30,7 +30,7 @@ compile:
   extends:
     - .global-vars
   script:
-    - go build -ldflags "-extldflags '-static'" -o "${CI_PROJECT_DIR}/${RELEASE_BIN}" ./cmd/alsaRemoteControl
+    - go build -ldflags "-extldflags '-static'" -o "${CI_PROJECT_DIR}/${RELEASE_BIN}" .
     - xz $RELEASE_BIN
   artifacts:
     name: "compile_to_publish-$CI_COMMIT_REF_SLUG"
