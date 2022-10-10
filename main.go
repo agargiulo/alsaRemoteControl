@@ -8,7 +8,7 @@ import (
 	"path"
 	"strconv"
 
-	alsa "src.doom.fm/agargiulo/alsaRemoteControl"
+	"src.doom.fm/agargiulo/alsaRemoteControl/alsa"
 )
 
 func volumeStatusResponse(w http.ResponseWriter) {
